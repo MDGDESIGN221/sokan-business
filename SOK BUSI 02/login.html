@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SOKAN BUSINESS — Connexion Admin</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#060912;font-family:'Inter',system-ui,sans-serif;padding:20px}
+.login-card{width:100%;max-width:420px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:48px 40px}
+.login-logo{text-align:center;margin-bottom:36px}
+.login-logo-name{font-size:1.1rem;font-weight:600;letter-spacing:.12em;color:#fff;text-transform:uppercase}
+.login-logo-sub{font-size:.65rem;color:rgba(255,255,255,.35);letter-spacing:.2em;text-transform:uppercase;margin-top:4px}
+.login-title{font-size:1.4rem;font-weight:300;color:#fff;margin-bottom:8px;text-align:center}
+.login-sub{font-size:.8rem;color:rgba(255,255,255,.35);text-align:center;margin-bottom:32px}
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+label{font-size:.7rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+input{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 16px;color:#fff;font-size:.9rem;font-family:inherit;outline:none;transition:border-color .2s}
+input:focus{border-color:rgba(30,111,217,.6)}
+input::placeholder{color:rgba(255,255,255,.2)}
+.err{display:none;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:12px 16px;font-size:.8rem;color:#F87171;margin-bottom:16px}
+.btn-login{width:100%;padding:14px;background:#1E6FD9;border:none;border-radius:12px;color:#fff;font-size:.88rem;font-weight:500;cursor:pointer;font-family:inherit;transition:background .2s;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-login:hover{background:#1a5fb8}
+.btn-login:disabled{opacity:.6;cursor:not-allowed}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.back-link{text-align:center;margin-top:20px}
+.back-link a{font-size:.75rem;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s}
+.back-link a:hover{color:rgba(255,255,255,.6)}
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="login-logo">
+    <div class="login-logo-name">SOKAN BUSINESS</div>
+    <div class="login-logo-sub">Administration</div>
+  </div>
+  <div class="login-title">Connexion</div>
+  <div class="login-sub">Accès réservé aux administrateurs</div>
+
+  <div class="err" id="err"></div>
+
+  <div class="fg">
+    <label>Email</label>
+    <input type="email" id="email" placeholder="admin@sokanbusiness.com" onkeydown="if(event.key==='Enter')login()">
+  </div>
+  <div class="fg">
+    <label>Mot de passe</label>
+    <input type="password" id="pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
+  </div>
+
+  <button class="btn-login" id="btn" onclick="login()">Se connecter</button>
+
+  <div class="back-link"><a href="/">← Retour au site</a></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+// ── Firebase Config ──────────────────────────────
+firebase.initializeApp({
+  apiKey:            "AIzaSyAZdogkL4uTAN2N23bIkUua3SecIz4Jp_E",
+  authDomain:        "sokan-business.firebaseapp.com",
+  projectId:         "sokan-business",
+  storageBucket:     "sokan-business.firebasestorage.app",
+  messagingSenderId: "146847111819",
+  appId:             "1:146847111819:web:f3f453c8c858509a31d28e"
+});
+var auth = firebase.auth();
+var db   = firebase.firestore();
+
+// ── Si déjà connecté → rediriger vers admin ──────
+auth.onAuthStateChanged(function(user) {
+  if (user) {
+    db.collection('users').doc(user.uid).get().then(function(doc) {
+      if (doc.exists && doc.data().role === 'admin') {
+        window.location.href = '/admin.html';
+      }
+    });
+  }
+});
+
+// ── Connexion ────────────────────────────────────
+async function login() {
+  var email = document.getElementById('email').value.trim();
+  var pwd   = document.getElementById('pwd').value;
+  var errEl = document.getElementById('err');
+  var btn   = document.getElementById('btn');
+
+  errEl.style.display = 'none';
+  if (!email || !pwd) {
+    errEl.textContent = 'Veuillez remplir tous les champs.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Connexion...';
+
+  try {
+    var cred = await auth.signInWithEmailAndPassword(email, pwd);
+    var doc  = await db.collection('users').doc(cred.user.uid).get();
+
+    if (!doc.exists || doc.data().role !== 'admin') {
+      await auth.signOut();
+      errEl.textContent = 'Accès non autorisé. Ce compte n\'a pas les droits administrateur.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = 'Se connecter';
+      return;
+    }
+
+    // Connexion OK → rediriger vers admin
+    window.location.href = '/admin.html';
+
+  } catch(e) {
+    var msgs = {
+      'auth/user-not-found':     'Aucun compte avec cet email.',
+      'auth/wrong-password':     'Mot de passe incorrect.',
+      'auth/invalid-credential': 'Identifiants incorrects.',
+      'auth/invalid-email':      'Email invalide.',
+      'auth/too-many-requests':  'Trop de tentatives. Réessayez dans quelques minutes.'
+    };
+    errEl.textContent = msgs[e.code] || 'Erreur de connexion. Réessayez.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = 'Se connecter';
+  }
+}
+</script>
+</body>
+</html>
