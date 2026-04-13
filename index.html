@@ -2890,6 +2890,8 @@ onSnapshot(doc(db, "settings", "chatbot"), (docSnap) => {
 const container = document.querySelector("#temoignages-list");
 
 onSnapshot(collection(db, "testimonials"), (snapshot) => {
+  console.log("🔥 témoignages reçus");
+
   if (!container) return;
 
   container.innerHTML = "";
