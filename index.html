@@ -2898,13 +2898,19 @@ onSnapshot(collection(db, "testimonials"), (snapshot) => {
     const t = doc.data();
 
     const el = document.createElement("div");
-    el.innerHTML = `
-      <div style="margin-bottom:20px;">
-        <strong>${t.name}</strong>
-        <p>${t.message}</p>
-        <span>⭐ ${t.rating}/5</span>
-      </div>
-    `;
+el.className = "temoignage-card";
+
+el.innerHTML = `
+  <div class="temoignage-stars">★★★★★</div>
+  <div class="temoignage-text">"${t.message}"</div>
+  <div class="temoignage-author">
+    <div class="temoignage-avatar">${t.name[0]}</div>
+    <div>
+      <div class="temoignage-name">${t.name}</div>
+      <div class="temoignage-role">Client</div>
+    </div>
+  </div>
+`;
 
     container.appendChild(el);
   });
