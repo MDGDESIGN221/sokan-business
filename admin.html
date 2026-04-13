@@ -1124,7 +1124,7 @@ function renderTemosEditor(){
       '<div class="fg"><label class="flbl">Témoignage</label><textarea class="fin temo-text" data-i="'+i+'" placeholder="Le témoignage client...">'+escHtml(t.text||'')+'</textarea></div>'+
       '<div class="fg-grid">'+
         '<div class="fg"><label class="flbl">Note</label><select class="fin temo-stars" data-i="'+i+'"><option value="5" '+(t.stars===5?'selected':'')+'>★★★★★  (5 étoiles)</option><option value="4" '+(t.stars===4?'selected':'')+'>★★★★☆  (4 étoiles)</option><option value="3" '+(t.stars===3?'selected':'')+'>★★★☆☆  (3 étoiles)</option></select></div>'+
-        '<div class="fg"><label class="flbl">Entreprise (optionnel)</label><input class="fin temo-company" data-i="'+i+'" value="'+escHtml(t.company||'')+'" placeholder="Nom de l'entreprise"></div>'+
+        '<div class="fg"><label class="flbl">Entreprise (optionnel)</label><input class="fin temo-company" data-i="'+i+'" value="'+escHtml(t.company||'')+'" placeholder="Nom entreprise"></div>'+
       '</div>';
     el.appendChild(card);
   });

@@ -624,6 +624,49 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
 .partner-logo img{width:160px;height:56px;object-fit:contain}
 @media(max-width:768px){.partners-grid{gap:36px 56px}.partner-logo{width:140px;height:56px}.partner-logo img{width:120px;height:44px}}
 @media(max-width:480px){.partners-grid{gap:28px 40px}.partner-logo{width:110px;height:44px}.partner-logo img{width:96px;height:36px}}
+
+/* ═══ LANG SWITCH ════════════════════════════════ */
+[data-lang="en"] .lang-fr{display:none}
+[data-lang="fr"] .lang-en{display:none}
+#lang-btn{position:relative}
+#lang-btn::after{content:attr(data-current);position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+
+/* ═══ MOBILE NAV ══════════════════════════════════ */
+@media(max-width:900px){
+  .nav-links{display:none!important}
+  .topbar{display:none}
+  #lang-btn{font-size:.6rem;padding:4px 9px}
+}
+@media(max-width:600px){
+  .hero-h{font-size:clamp(2.4rem,9vw,4rem)!important}
+  .hero-sub{font-size:.88rem}
+  .hero-btns{flex-direction:column;gap:10px;align-items:flex-start}
+  .hero-btns .btn{width:100%;justify-content:center}
+  .reassurance-grid{grid-template-columns:1fr 1fr!important}
+  .steps-grid{grid-template-columns:1fr!important}
+  .offres-grid{grid-template-columns:1fr!important}
+  .temoignages-grid{grid-template-columns:1fr!important}
+  .contact-layout{grid-template-columns:1fr!important}
+  .about-vals{grid-template-columns:1fr 1fr!important}
+  .form-row{grid-template-columns:1fr!important}
+  .footer-grid{grid-template-columns:1fr!important}
+  .footer-grid>div{text-align:center}
+  .footer-socials{justify-content:center}
+  .partners-grid{gap:24px 32px!important}
+  .wrap{padding:0 16px!important}
+  .section{padding:60px 0!important}
+  .track-bar{flex-direction:column;border-radius:12px}
+  .track-in{border-radius:12px 12px 0 0!important}
+  .track-go{border-radius:0 0 12px 12px!important;width:100%;justify-content:center}
+  .modal{margin:12px;max-height:calc(100vh - 24px);overflow-y:auto;border-radius:16px}
+  .faq-q{font-size:.82rem!important;padding:16px 18px!important}
+  .stats-grid{grid-template-columns:repeat(2,1fr)!important}
+  .svc-grid{grid-template-columns:1fr!important}
+}
+@media(max-width:400px){
+  .hero-h{font-size:2.2rem!important}
+  .reassurance-grid{grid-template-columns:1fr!important}
+}
 </style>
 </head>
 <body>
@@ -638,7 +681,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
         <span style="font-size:.58rem;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3)">Opérations actives 24/7</span>
       </div>
       <div class="topbar-sep"></div>
-      <a href="/cdn-cgi/l/email-protection#5b3834352f3a382f1b2834303a35392e2832353e282875383436"><span class="__cf_email__" data-cfemail="f1929e9f85909285b1829e9a909f938482989f948282df929e9c">[email&#160;protected]</span></a>
+      <a href="/cdn-cgi/l/email-protection#5b3834352f3a382f1b2834303a35392e2832353e282875383436">contact@sokanbusiness.com</a>
     </div>
     <div class="topbar-side">
       <a href="#tracking">Suivi cargaison</a>
@@ -664,7 +707,9 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
         <a href="#about">À propos</a>
         <a href="#contact">Contact</a>
       </div>
-      <div class="nav-right" id="nav-auth-area">
+      <div class="nav-right" style="display:flex;align-items:center;gap:10px">
+        <button id="lang-btn" onclick="switchLang()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:.65rem;font-weight:600;letter-spacing:.12em;padding:5px 12px;border-radius:8px;cursor:pointer;font-family:var(--sans);transition:all .2s" title="Switch language">FR/EN</button>
+      <div id="nav-auth-area" style="display:flex;align-items:center;gap:8px">
         <button class="lang-toggle" id="nav-lang-btn" onclick="toggleLang()" title="Switch language">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="width:13px;height:13px"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <span id="nav-lang-label">EN</span>
@@ -674,6 +719,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
         <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
           <span></span><span></span><span></span>
         </button>
+      </div>
       </div>
     </div>
   </div>
@@ -1102,7 +1148,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
           </div>
           <div class="ci">
             <div class="ci-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="var(--sky)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22,6 12,13 2,6" stroke="var(--sky)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-            <div><div class="ci-lbl">Email</div><div class="ci-val"><a href="/cdn-cgi/l/email-protection#dab9b5b4aebbb9ae9aa9b5b1bbb4b8afa9b3b4bfa9a9f4b9b5b7"><span class="__cf_email__" data-cfemail="096a66677d686a7d497a666268676b7c7a60676c7a7a276a6664">[email&#160;protected]</span></a></div></div>
+            <div><div class="ci-lbl">Email</div><div class="ci-val"><a href="/cdn-cgi/l/email-protection#dab9b5b4aebbb9ae9aa9b5b1bbb4b8afa9b3b4bfa9a9f4b9b5b7">contact@sokanbusiness.com</a></div></div>
           </div>
           <div class="ci">
             <div class="ci-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="var(--sky)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="3" stroke="var(--sky)" fill="none" stroke-width="1.6"/></svg></div>
@@ -1301,7 +1347,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
         <div class="fc-title">Informations</div>
         <ul class="fc-links">
           <li><a onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">À propos</a></li>
-          <li><a href="/cdn-cgi/l/email-protection#21424e4f5540425561524e4a404f435452484f4452520f424e4c"><span class="__cf_email__" data-cfemail="e2818d8c96838196a2918d89838c8097918b8c879191cc818d8f">[email&#160;protected]</span></a></li>
+          <li><a href="/cdn-cgi/l/email-protection#21424e4f5540425561524e4a404f435452484f4452520f424e4c">contact@sokanbusiness.com</a></li>
           <li><a href="tel:+221776456364">+221 77 645 63 64</a> &nbsp;·&nbsp; <a href="tel:+221773245845">+221 77 324 58 45</a></li>
           <li><a>Dakar, Sénégal</a></li>
         </ul>
@@ -1465,7 +1511,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
       <div style="margin-top:28px;display:flex;flex-direction:column;gap:12px">
         <div style="padding:18px 20px;border-radius:12px;background:rgba(30,111,217,.07);border:1px solid rgba(30,111,217,.2);font-size:.82rem;color:var(--w50);line-height:1.7">
           Pour modifier vos informations personnelles ou votre mot de passe, contactez notre équipe :<br>
-          <a href="/cdn-cgi/l/email-protection#395a56574d585a4d794a565258575b4c4a50575c4a4a175a5654"><span class="__cf_email__" data-cfemail="34575b5a4055574074475b5f555a5641475d5a5147471a575b59">[email&#160;protected]</span></a> &nbsp;·&nbsp;
+          <a href="/cdn-cgi/l/email-protection#395a56574d585a4d794a565258575b4c4a50575c4a4a175a5654">contact@sokanbusiness.com</a> &nbsp;·&nbsp;
           <a href="tel:+221776456364" style="color:var(--sky)">+221 77 645 63 64</a>
         </div>
         <button class="btn btn-glass" onclick="closeDashboard();document.getElementById('devis').scrollIntoView({behavior:'smooth'})" style="width:fit-content;padding:10px 24px;font-size:.78rem">
@@ -1681,7 +1727,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
      (doit etre juste avant le script principal)
 ════════════════════════════════════════════ -->
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -2516,6 +2562,100 @@ function applyTranslations() {
     ? 'SOKAN BUSINESS SARL — International Logistics'
     : 'SOKAN BUSINESS SARL — Logistique Internationale';
 }
+
+
+/* ═══ SWITCH LANGUE FR/EN ═══════════════════════════ */
+var _currentLang = 'fr';
+var TRANS = {
+  fr: {
+    nav: ['Accueil','Services','Offres','Suivi colis','Devis','À propos','Contact'],
+    hero1: 'Vos marchandises', hero2: 'arrivent.', hero3: 'Toujours.',
+    heroSub: 'De Shanghai à Dakar, de Le Havre à Abidjan — SOKAN prend en charge chaque étape de votre chaîne logistique.',
+    heroBtn1: 'Obtenir mon devis gratuit', heroBtn2: 'Parler à un expert',
+    trackPlaceholder: 'Ex: SKB-2025-00389', trackBtn: 'Suivre',
+    devisTitle: 'Demander un devis', contactTitle: 'Parlons de votre projet',
+    eyebrow_services: 'Services', eyebrow_how: 'Processus', eyebrow_offres: 'Nos offres',
+    eyebrow_tracking: 'Suivi en temps réel', eyebrow_temo: 'Témoignages',
+    eyebrow_faq: 'FAQ', eyebrow_about: 'À propos', eyebrow_contact: 'Contact',
+    sendBtn: 'Envoyer le message', devisBtn: 'Demander un devis gratuit',
+    loginBtn: 'Se connecter', clientBtn: 'Espace client',
+    footerCopy: '© 2025 SOKAN BUSINESS SARL. Tous droits réservés.',
+    langBtn: 'EN',
+  },
+  en: {
+    nav: ['Home','Services','Offers','Track shipment','Quote','About','Contact'],
+    hero1: 'Your goods', hero2: 'arrive.', hero3: 'Always.',
+    heroSub: 'From Shanghai to Dakar, from Le Havre to Abidjan — SOKAN handles every step of your supply chain.',
+    heroBtn1: 'Get my free quote', heroBtn2: 'Talk to an expert',
+    trackPlaceholder: 'Ex: SKB-2025-00389', trackBtn: 'Track',
+    devisTitle: 'Request a quote', contactTitle: 'Talk about your project',
+    eyebrow_services: 'Services', eyebrow_how: 'Process', eyebrow_offres: 'Our offers',
+    eyebrow_tracking: 'Real-time tracking', eyebrow_temo: 'Testimonials',
+    eyebrow_faq: 'FAQ', eyebrow_about: 'About us', eyebrow_contact: 'Contact',
+    sendBtn: 'Send message', devisBtn: 'Request a free quote',
+    loginBtn: 'Sign in', clientBtn: 'Client portal',
+    footerCopy: '© 2025 SOKAN BUSINESS SARL. All rights reserved.',
+    langBtn: 'FR',
+  }
+};
+
+window.switchLang = function() {
+  _currentLang = _currentLang === 'fr' ? 'en' : 'fr';
+  var t = TRANS[_currentLang];
+  document.documentElement.lang = _currentLang;
+  
+  // Bouton langue
+  var langBtn = document.getElementById('lang-btn');
+  if (langBtn) langBtn.textContent = t.langBtn;
+
+  // Nav links
+  var navLinks = document.querySelectorAll('.nav-links a');
+  t.nav.forEach(function(label, i) {
+    if (navLinks[i]) navLinks[i].textContent = label;
+  });
+
+  // Hero
+  var lines = document.querySelectorAll('.hero-h-line span');
+  if (lines[0]) lines[0].textContent = t.hero1;
+  if (lines[1]) lines[1].textContent = t.hero2;
+  if (lines[2]) lines[2].textContent = t.hero3;
+  var heroSub = document.querySelector('.hero-sub');
+  if (heroSub) heroSub.textContent = t.heroSub;
+
+  // Boutons hero
+  var heroBtns = document.querySelectorAll('.hero-btns .btn');
+  if (heroBtns[0]) heroBtns[0].textContent = t.heroBtn1;
+  if (heroBtns[1]) heroBtns[1].textContent = t.heroBtn2;
+
+  // Tracking
+  var trackIn = document.querySelector('.track-in');
+  var trackGo = document.querySelector('.track-go');
+  if (trackIn) trackIn.placeholder = t.trackPlaceholder;
+  if (trackGo) trackGo.textContent = t.trackBtn;
+
+  // Auth buttons
+  var authArea = document.getElementById('nav-auth-area');
+  if (authArea && !window._currentUser) {
+    var btns = authArea.querySelectorAll('.btn');
+    if (btns[0]) btns[0].textContent = t.loginBtn;
+    if (btns[1]) btns[1].textContent = t.clientBtn;
+  }
+
+  // Footer copyright
+  var copy = document.querySelector('.footer-copy');
+  if (copy) {
+    var span = copy.querySelector('span');
+    if (span) copy.innerHTML = t.footerCopy.replace('SOKAN BUSINESS SARL', '<span>SOKAN BUSINESS SARL</span>');
+  }
+
+  // Boutons formulaires
+  var contactBtn = document.getElementById('contact-btn');
+  if (contactBtn) contactBtn.textContent = t.sendBtn;
+  var devisBtn = document.getElementById('devis-btn');
+  if (devisBtn) devisBtn.textContent = t.devisBtn;
+
+  toast(_currentLang === 'en' ? 'Language switched to English 🇬🇧' : 'Langue changée en Français 🇫🇷');
+};
 
 })();
 </script>
