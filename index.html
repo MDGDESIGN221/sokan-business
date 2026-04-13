@@ -2887,7 +2887,7 @@ onSnapshot(doc(db, "settings", "chatbot"), (docSnap) => {
 });
 
 // ✅ TÉMOIGNAGES
-const container = document.querySelector("#testimonials");
+const container = document.querySelector("#temoignages-list");
 
 onSnapshot(collection(db, "testimonials"), (snapshot) => {
   if (!container) return;
