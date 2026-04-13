@@ -2860,10 +2860,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 })();
-</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAZdogkL4uTAN2N23bIkUua3SecIz4Jp_E",
@@ -2874,9 +2873,11 @@ const firebaseConfig = {
   appId: "1:146847111819:web:f3f453c8c858509a31d28e"
 };
 
+// ✅ Initialisation
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// ✅ CONFIG CHATBOT
 onSnapshot(doc(db, "settings", "chatbot"), (docSnap) => {
   if (docSnap.exists()) {
     console.log("✅ FIREBASE CONNECTÉ :", docSnap.data());
@@ -2884,6 +2885,31 @@ onSnapshot(doc(db, "settings", "chatbot"), (docSnap) => {
     console.log("⚠️ Pas de config trouvée");
   }
 });
+
+// ✅ TÉMOIGNAGES
+const container = document.querySelector("#testimonials");
+
+onSnapshot(collection(db, "testimonials"), (snapshot) => {
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  snapshot.forEach((doc) => {
+    const t = doc.data();
+
+    const el = document.createElement("div");
+    el.innerHTML = `
+      <div style="margin-bottom:20px;">
+        <strong>${t.name}</strong>
+        <p>${t.message}</p>
+        <span>⭐ ${t.rating}/5</span>
+      </div>
+    `;
+
+    container.appendChild(el);
+  });
+});
+</script>
 </script>
 <script src="chatbot-widget.js"></script>
 
