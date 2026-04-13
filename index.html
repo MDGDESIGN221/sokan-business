@@ -2861,7 +2861,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
 })();
 </script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyAZdogkL4uTAN2N23bIkUua3SecIz4Jp_E",
+  authDomain: "sokan-business.firebaseapp.com",
+  projectId: "sokan-business",
+  storageBucket: "sokan-business.firebasestorage.app",
+  messagingSenderId: "146847111819",
+  appId: "1:146847111819:web:f3f453c8c858509a31d28e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+onSnapshot(doc(db, "settings", "chatbot"), (docSnap) => {
+  if (docSnap.exists()) {
+    console.log("✅ FIREBASE CONNECTÉ :", docSnap.data());
+  } else {
+    console.log("⚠️ Pas de config trouvée");
+  }
+});
+</script>
 <script src="chatbot-widget.js"></script>
 
 </body>
