@@ -1,7 +1,8 @@
-// api/chat.js — Vercel Serverless Function
+// api/chat.js — Vercel Serverless Function (FINAL OPTIMIZED)
 
 export default async function handler(req, res) {
 
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', 'https://sokan-business.com');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -14,80 +15,91 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { message, history = [], lang = 'fr' } = req.body;
+  try {
 
-  if (!message || typeof message !== 'string' || message.trim().length === 0) {
-    return res.status(400).json({ error: 'Message requis' });
-  }
+    const { message, history = [], lang = 'fr' } = req.body;
 
-  const OR_KEY = process.env.OPENROUTER_KEY;
-  const BOT_CONTEXT = process.env.BOT_CONTEXT || `
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return res.status(400).json({ error: 'Message requis' });
+    }
+
+    const OR_KEY = process.env.OPENROUTER_KEY;
+
+    if (!OR_KEY) {
+      return res.status(500).json({ error: 'Configuration serveur manquante' });
+    }
+
+    // CONTEXTE SOKAN PAR DÉFAUT
+    const BOT_CONTEXT = process.env.BOT_CONTEXT || `
 SOKAN BUSINESS SARL — Logistique internationale basée à Dakar, Sénégal.
 Services : transport maritime FCL/LCL, fret aérien express, transport terrestre CEDEAO, dédouanement, entreposage.
-Routes principales : Chine→Dakar (25-45j maritime), Europe→Dakar (15-25j), Aérien monde entier (3-7j), Terrestre CEDEAO (3-10j).
+Routes et délais : Chine→Dakar (25-45j maritime), Europe→Dakar (15-25j), Aérien monde entier (3-7j), Terrestre CEDEAO (3-10j).
 Tarifs : personnalisés selon volume, poids, origine, destination et urgence. Devis gratuit sous 24h.
 Contact : +221 77 645 63 64 | +221 77 324 58 45 | contact@sokanbusiness.com
 Partenaires maritimes : Maersk, CMA CGM, Hapag-Lloyd, ONE.
-Offres : SOKAN CHINA EXPRESS (Chine→Dakar), SOKAN EUROPE DIRECT (Europe→Dakar), SOKAN AIR URGENT (express mondial), SOKAN WEST AFRICA (distribution CEDEAO).
-Espace client : suivi en temps réel, historique expéditions, demande de devis en ligne.
 `;
 
-  if (!OR_KEY) {
-    return res.status(500).json({ error: 'Configuration serveur manquante' });
-  }
+    // PROMPT FR
+    const systemPromptFr = `Tu es l'assistant de SOKAN BUSINESS SARL, spécialiste en logistique internationale à Dakar.
 
-  const langInstruction = lang === 'fr'
-    ? 'RÈGLE: tu réponds principalement en français sauf si l’utilisateur écrit en anglais.'
-    : 'RULE: reply mainly in English unless user writes in French.';
+CONTEXTE :
+${BOT_CONTEXT}
 
-  const basePrompt = lang === 'fr'
-    ? `Tu es un assistant intelligent, naturel et professionnel pour SOKAN BUSINESS, entreprise de logistique internationale basée à Dakar.
+STYLE DE RÉPONSE :
+- Réponds en 3 à 5 phrases maximum
+- Ton humain, direct, professionnel (pas robotique)
+- Donne des infos concrètes (délais, types de transport, exemples)
+- Tu peux poser une question simple si cela aide à avancer (pas obligatoire)
+- Parle comme un conseiller, pas comme une machine
 
-PERSONNALITÉ :
-- Tu peux discuter naturellement (conversation humaine, amicale ou professionnelle)
-- Tu n’es pas un bot robotique
-- Tu peux répondre à des questions générales et simples
-- Tu restes intelligent, utile et poli
+ORIENTATION BUSINESS :
+- Question de prix → propose devis + demande origine et volume
+- Client hésitant → rassure avec un exemple concret
+- Client prêt → donne contact ou guide vers action
 
-SPÉCIALITÉ PRINCIPALE :
-- Logistique internationale (transport maritime, aérien, terrestre)
-- Dédouanement, import/export, devis, délais
+EXEMPLES :
 
-RÈGLES IMPORTANTES :
-- Si la question concerne la logistique → réponse précise et utile
-- Si la question est générale → réponse naturelle et conversationnelle
-- Si la question concerne les services → propose une solution ou un devis
-- Ne jamais inventer d’informations sur l’entreprise
-- Si tu ne sais pas → répond honnêtement
+Q: "vous transportez des voitures ?"
+R: "Oui, nous transportons des véhicules vers Dakar par voie maritime, soit en conteneur soit en roulier selon votre budget. Depuis l'Europe, comptez environ 15 à 25 jours. Vous importez depuis quel pays ?"
 
-STYLE :
-- Naturel, fluide, humain
-- Pas trop formel
-- Pas de réponses robotisées
+Q: "prix Chine Dakar ?"
+R: "Le tarif dépend du volume — on travaille en conteneur complet ou en groupage si vous avez peu de marchandises. Depuis la Chine, les délais sont généralement de 25 à 45 jours. Je peux vous faire un devis rapide si vous avez les dimensions."
 
-CONTACT :
-+221 77 645 63 64
-contact@sokanbusiness.com`
-    : `You are a smart, natural assistant for SOKAN BUSINESS, a logistics company based in Dakar.`;
+Q: "délai depuis la France ?"
+R: "Depuis la France, comptez environ 15 à 25 jours en maritime ou 3 à 7 jours en aérien. Tout dépend de l'urgence et du type de marchandise. Vous expédiez quoi exactement ?"
 
-  const systemPrompt =
-    basePrompt +
-    "\n\nCONTEXTE ENTREPRISE (UTILISE POUR LES REPONSES BUSINESS):\n" +
-    BOT_CONTEXT +
-    "\n\n" +
-    langInstruction;
+LANGUE : réponds toujours en français.`;
 
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    { role: 'system', content: "Réponds naturellement comme un assistant humain, pas comme un robot." },
-    ...history.slice(-6).map(m => ({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: m.content
-    })),
-    { role: 'user', content: message.trim() }
-  ];
+    // PROMPT EN
+    const systemPromptEn = `You are the assistant of SOKAN BUSINESS SARL, international logistics company based in Dakar.
 
-  try {
+CONTEXT:
+${BOT_CONTEXT}
+
+RESPONSE STYLE:
+- 3 to 5 sentences max
+- Human, direct, professional
+- Include concrete info (transit time, shipping type)
+- You may ask one simple follow-up question if useful
+
+BUSINESS GOAL:
+- Help the client and guide toward a quote or action
+
+LANGUAGE: Always reply in English.`;
+
+    const systemPrompt = lang === 'fr' ? systemPromptFr : systemPromptEn;
+
+    // MESSAGES
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...history.slice(-6).map(m => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: m.content
+      })),
+      { role: 'user', content: message.trim() }
+    ];
+
+    // CALL OPENROUTER
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -98,23 +110,29 @@ contact@sokanbusiness.com`
       },
       body: JSON.stringify({
         model: 'openai/gpt-4o-mini',
-        max_tokens: 350,
-        temperature: 0.6,
+        max_tokens: 300,
+        temperature: 0.4,
         messages
       })
     });
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content?.trim();
+    let reply = data.choices?.[0]?.message?.content?.trim();
 
-    if (!reply) {
-      return res.status(502).json({ error: 'Réponse vide du service IA' });
+    // FALLBACK INTELLIGENT
+    if (!reply || reply.length < 5) {
+      reply = lang === 'fr'
+        ? "Je peux vous aider pour vos besoins en transport (maritime, aérien, import/export). D’où souhaitez-vous expédier votre marchandise ?"
+        : "I can help with your shipping needs (sea, air, import/export). Where are you shipping from?";
     }
 
     return res.status(200).json({ reply });
 
   } catch (err) {
     console.error('[SOKAN CHAT ERROR]', err);
-    return res.status(500).json({ error: 'Erreur serveur' });
+
+    return res.status(200).json({
+      reply: "Un petit souci technique, mais je peux toujours vous aider 😊 Dites-moi simplement ce que vous souhaitez expédier."
+    });
   }
 }
