@@ -4433,29 +4433,30 @@ async function askAI(userMsg) {
   var timeoutId  = setTimeout(function(){ controller.abort(); }, AI_TIMEOUT_MS);
 
   try {
-    var res = await fetch(OR_URL, {
-      method:  'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': 'Bearer ' + OR_KEY,
-        'HTTP-Referer':  window.location.origin,
-        'X-Title':       'SOKAN BUSINESS Chatbot'
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model:       OR_MODEL,
-        max_tokens:  400,
-        temperature: 0.5,
-        messages:    [{ role: 'system', content: systemPrompt }].concat(msgs)
-      })
-    });
-    clearTimeout(timeoutId);
+    var res = await fetch("/api/chat", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  signal: controller.signal,
+  body: JSON.stringify({
+    message: userMsg,
+    history: history,
+    lang: lang
+  })
+});
 
-    if (!res.ok) throw new Error('OpenRouter HTTP ' + res.status);
-    var data = await res.json();
-    var text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-    if (!text || !text.trim()) throw new Error('OpenRouter empty response');
-    return text.trim();
+clearTimeout(timeoutId);
+
+if (!res.ok) throw new Error('API HTTP ' + res.status);
+
+var data = await res.json();
+
+if (!data.reply || !data.reply.trim()) {
+  throw new Error('Empty API response');
+}
+
+return data.reply.trim();
 
   } catch(e) {
     clearTimeout(timeoutId);
