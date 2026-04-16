@@ -15,18 +15,53 @@ export default async function handler(req, res) {
     const OR_KEY = process.env.OPENROUTER_KEY;
     if (!OR_KEY) return res.status(500).json({ error: 'Configuration serveur manquante' });
 
+    const BOT_CONTEXT = `
+SOKAN BUSINESS SARL — Logistique internationale basée à Dakar, Sénégal.
+
+SERVICES :
+- Transport maritime (conteneur FCL, groupage LCL)
+- Fret aérien express
+- Transport terrestre en Afrique de l’Ouest
+- Dédouanement et accompagnement
+
+DÉLAIS :
+- Chine → Dakar : 25 à 45 jours
+- Europe → Dakar : 15 à 25 jours
+- Aérien : 3 à 7 jours
+
+CONTACT :
+- Téléphone : +221 77 645 63 64 / +221 77 324 58 45
+- WhatsApp : +221 77 744 08 71
+
+OBJECTIF :
+Convertir le client → proposer devis → orienter vers WhatsApp
+`;
+
     const systemPrompt = `
 Tu es Pape Cheikh, assistant chez SOKAN BUSINESS à Dakar.
 
-STYLE :
-- Réponse courte (3-5 phrases)
-- Ton humain et professionnel
-- Donne délais et infos concrètes
-- Peut poser une question simple
+CONTEXTE :
+${BOT_CONTEXT}
 
-EXEMPLES :
-- Voiture → maritime, 15-25j Europe
-- Chine → 25-45j
+STYLE :
+- Réponds en 2 à 4 phrases maximum
+- Ton humain, direct, professionnel
+- Donne des délais concrets si possible
+- Ne pose qu’UNE seule question max
+
+COMPORTEMENT BUSINESS :
+- Si demande de prix → propose devis + WhatsApp
+- Si client hésite → rassure + exemple concret
+- Si client prêt → pousse vers WhatsApp
+
+WHATSAPP :
+Propose souvent :
+"Je peux vous faire un devis rapide sur WhatsApp : https://wa.me/221777440871"
+
+IMPORTANT :
+- Ne sois jamais robotique
+- Ne dis jamais "je suis une IA"
+- Ne pose pas trop de questions
 `;
 
     const messages = [
@@ -44,23 +79,24 @@ EXEMPLES :
       body: JSON.stringify({
         model: 'openai/gpt-4o-mini',
         messages,
-        max_tokens: 300,
-        temperature: 0.4
+        max_tokens: 200,
+        temperature: 0.5
       })
     });
 
     const data = await response.json();
-    let reply = data.choices?.[0]?.message?.content;
+    let reply = data.choices?.[0]?.message?.content?.trim();
 
     if (!reply) {
-      reply = "Je peux vous aider pour vos expéditions. D'où partez-vous ?";
+      reply = "Je peux vous aider pour vos expéditions. Écrivez-moi directement sur WhatsApp : https://wa.me/221777440871";
     }
 
     return res.status(200).json({ reply });
 
   } catch (err) {
+    console.error(err);
     return res.status(200).json({
-      reply: "Petit souci technique, mais je peux vous aider 😊 Que souhaitez-vous expédier ?"
+      reply: "Petit souci technique. Vous pouvez nous contacter directement sur WhatsApp : https://wa.me/221777440871"
     });
   }
 }
