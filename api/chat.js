@@ -1,9 +1,8 @@
 // api/chat.js — Vercel Serverless Function
-// La clé OpenRouter est dans les variables d'environnement Vercel (jamais dans le code)
 
 export default async function handler(req, res) {
 
-  // CORS — autoriser uniquement ton domaine
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', 'https://sokan-business.com');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -16,42 +15,78 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { message, history = [], lang = 'fr' } = req.body;
+  const { message, history = [], lang = 'fr', context = '' } = req.body;
 
   if (!message || typeof message !== 'string' || message.trim().length === 0) {
     return res.status(400).json({ error: 'Message requis' });
   }
 
-  // Clé stockée dans Vercel → Settings → Environment Variables
   const OR_KEY = process.env.OPENROUTER_KEY;
   if (!OR_KEY) {
-    console.error('[SOKAN] OPENROUTER_KEY manquante dans les variables d\'environnement');
+    console.error('[SOKAN] OPENROUTER_KEY manquante');
     return res.status(500).json({ error: 'Configuration serveur manquante' });
   }
 
-  // System prompt
+  // 🌍 Langue
   const langInstruction = lang === 'fr'
-    ? 'RÈGLE ABSOLUE : Tu DOIS répondre UNIQUEMENT en français. Pas un seul mot en anglais.'
-    : 'ABSOLUTE RULE: You MUST reply ONLY in English. Not a single word in French.';
+    ? 'RÈGLE ABSOLUE : Tu DOIS répondre UNIQUEMENT en français.'
+    : 'ABSOLUTE RULE: You MUST reply ONLY in English.';
 
-  const systemPrompt = (lang === 'fr'
-    ? `Tu es l'assistant officiel de SOKAN BUSINESS SARL, entreprise de logistique internationale basée à Dakar, Sénégal.
-Tu réponds UNIQUEMENT sur : logistique, transport maritime/aérien/terrestre, dédouanement, entreposage, devis, délais, tarifs.
-Si la question est hors sujet, réponds : "Je suis uniquement disponible pour les questions liées à nos services logistiques."
-Réponses courtes, claires, orientées action. Pour tout contact humain : +221 77 645 63 64 ou contact@sokanbusiness.com.
-Partenaires : Maersk, CMA CGM, Hapag-Lloyd, ONE.
-Services : Maritime FCL/LCL (Chine 25-45j, Europe 15-25j), Aérien express (3-7j), Terrestre CEDEAO (Mali, Guinée, Gambie, Mauritanie).`
-    : `You are the official assistant of SOKAN BUSINESS SARL, international logistics company based in Dakar, Senegal.
-You ONLY answer questions about: logistics, sea/air/road transport, customs clearance, warehousing, quotes, transit times, rates.
-If off-topic, reply: "I am only available for questions related to our logistics services."
-Keep answers short, clear and action-oriented. For human contact: +221 77 645 63 64 or contact@sokanbusiness.com.
-Partners: Maersk, CMA CGM, Hapag-Lloyd, ONE.
-Services: Sea freight FCL/LCL (China 25-45d, Europe 15-25d), Air express (3-7d), Road ECOWAS (Mali, Guinea, Gambia, Mauritania).`
-  ) + '\n\n' + langInstruction;
+  // 🧠 Prompt optimisé
+  const basePrompt = lang === 'fr'
+    ? `Tu es l'assistant officiel de SOKAN BUSINESS SARL, entreprise de logistique internationale basée à Dakar.
 
-  // Historique : 6 derniers échanges max
+OBJECTIF :
+Aider les clients à comprendre nos services et les orienter vers un devis.
+
+RÈGLES IMPORTANTES :
+- Tu réponds uniquement sur la logistique (transport, douane, délais, etc.)
+- Si la question est floue → pose une question avant de répondre
+- Si tu ne sais pas → dis clairement que tu ne sais pas
+- Ne JAMAIS inventer d'informations
+- Si hors sujet → dis que tu es spécialisé en logistique
+
+STYLE :
+- Réponses courtes, claires, utiles
+- Ton professionnel mais simple
+- Toujours orienté action (proposer un devis)
+
+CONTACT :
++221 77 645 63 64
+contact@sokanbusiness.com
+
+INFOS :
+- Maritime: Chine 25-45 jours, Europe 15-25 jours
+- Aérien: 3-7 jours
+- Terrestre CEDEAO (Mali, Guinée, Gambie, Mauritanie)`
+    : `You are the official assistant of SOKAN BUSINESS SARL, international logistics company based in Dakar.
+
+GOAL:
+Help customers understand services and guide them toward a quote.
+
+RULES:
+- Only answer about logistics
+- If unclear → ask a question first
+- If you don't know → say it clearly
+- Never invent information
+
+STYLE:
+- Short, clear, useful
+- Action-oriented
+
+CONTACT:
++221 77 645 63 64
+contact@sokanbusiness.com`;
+
+  const systemPrompt =
+    basePrompt +
+    "\n\nCONTEXTE ENTREPRISE:\n" + (context || '') +
+    "\n\n" + langInstruction;
+
+  // 💬 Messages
   const messages = [
     { role: 'system', content: systemPrompt },
+    { role: 'system', content: "Si la question est imprécise, demande des détails avant de répondre." },
     ...history.slice(-6).map(m => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: m.content
@@ -69,9 +104,9 @@ Services: Sea freight FCL/LCL (China 25-45d, Europe 15-25d), Air express (3-7d),
         'X-Title': 'SOKAN BUSINESS Chatbot'
       },
       body: JSON.stringify({
-        model: 'mistralai/mistral-7b-instruct',
-        max_tokens: 400,
-        temperature: 0.5,
+        model: 'openai/gpt-4o-mini', // 🔥 meilleur modèle
+        max_tokens: 300,
+        temperature: 0.3,
         messages
       })
     });
