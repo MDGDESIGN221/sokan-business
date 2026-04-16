@@ -2,7 +2,6 @@
 
 export default async function handler(req, res) {
 
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', 'https://sokan-business.com');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -29,53 +28,54 @@ export default async function handler(req, res) {
   }
 
   const langInstruction = lang === 'fr'
-    ? 'RÈGLE ABSOLUE : Tu dois répondre uniquement en français.'
-    : 'ABSOLUTE RULE: You must reply only in English.';
+    ? 'RÈGLE: tu réponds principalement en français sauf si l’utilisateur écrit en anglais.'
+    : 'RULE: reply mainly in English unless user writes in French.';
 
   const basePrompt = lang === 'fr'
-    ? `Tu es l'assistant officiel de SOKAN BUSINESS, entreprise de logistique internationale basée à Dakar.
+    ? `Tu es un assistant intelligent, naturel et professionnel pour SOKAN BUSINESS, entreprise de logistique internationale basée à Dakar.
+
+PERSONNALITÉ :
+- Tu peux discuter naturellement (conversation humaine, amicale ou professionnelle)
+- Tu n’es pas un bot robotique
+- Tu peux répondre à des questions générales et simples
+- Tu restes intelligent, utile et poli
+
+SPÉCIALITÉ PRINCIPALE :
+- Logistique internationale (transport maritime, aérien, terrestre)
+- Dédouanement, import/export, devis, délais
 
 RÈGLES IMPORTANTES :
-- Tu es spécialisé en logistique, transport, douane, stockage et devis
-- Utilise TOUJOURS le contexte entreprise pour répondre
-- Si la question est floue → demande des précisions
-- Si tu ne sais pas → dis-le clairement
-- Ne JAMAIS inventer d'informations
-- Si l'information n'est pas dans le contexte → demande au lieu d'inventer
+- Si la question concerne la logistique → réponse précise et utile
+- Si la question est générale → réponse naturelle et conversationnelle
+- Si la question concerne les services → propose une solution ou un devis
+- Ne jamais inventer d’informations sur l’entreprise
+- Si tu ne sais pas → répond honnêtement
 
 STYLE :
-- Réponses courtes, claires et professionnelles
-- Toujours orienté action (devis, contact, solution)
+- Naturel, fluide, humain
+- Pas trop formel
+- Pas de réponses robotisées
 
 CONTACT :
 +221 77 645 63 64
 contact@sokanbusiness.com`
-    : `You are the official assistant of SOKAN BUSINESS, a logistics company based in Dakar.`
+    : `You are a smart, natural assistant for SOKAN BUSINESS, a logistics company based in Dakar.`;
 
   const systemPrompt =
     basePrompt +
-    "\n\nCONTEXTE ENTREPRISE (UTILISE OBLIGATOIREMENT CES INFORMATIONS):\n" +
+    "\n\nCONTEXTE ENTREPRISE (UTILISE POUR LES REPONSES BUSINESS):\n" +
     BOT_CONTEXT +
     "\n\n" +
     langInstruction;
 
   const messages = [
-    {
-      role: 'system',
-      content: systemPrompt
-    },
-    {
-      role: 'system',
-      content: "IMPORTANT: Si une question concerne les services, utilise toujours le contexte entreprise avant de répondre."
-    },
+    { role: 'system', content: systemPrompt },
+    { role: 'system', content: "Réponds naturellement comme un assistant humain, pas comme un robot." },
     ...history.slice(-6).map(m => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: m.content
     })),
-    {
-      role: 'user',
-      content: message.trim()
-    }
+    { role: 'user', content: message.trim() }
   ];
 
   try {
@@ -89,8 +89,8 @@ contact@sokanbusiness.com`
       },
       body: JSON.stringify({
         model: 'openai/gpt-4o-mini',
-        max_tokens: 300,
-        temperature: 0.3,
+        max_tokens: 350,
+        temperature: 0.6,
         messages
       })
     });
